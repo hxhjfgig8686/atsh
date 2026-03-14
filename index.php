@@ -1,56 +1,98 @@
+
+---
+
+## 👑 **مجلد admin/**
+
+### **admin/index.php (صفحة تسجيل الدخول)**
+```php
 <?php
-// index.php
+// admin/index.php
+session_start();
 
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, X-API-Key, Authorization");
-
-// للطلبات التجريبية
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
+if (isset($_SESSION['admin_id'])) {
+    header('Location: dashboard.php');
     exit();
 }
-
-// تحليل المسار
-$request_uri = $_SERVER['REQUEST_URI'];
-$script_name = $_SERVER['SCRIPT_NAME'];
-$path = str_replace(dirname($script_name), '', $request_uri);
-$path = parse_url($path, PHP_URL_PATH);
-$path = ltrim($path, '/');
-
-$segments = explode('/', $path);
-$endpoint = $segments[0] ?? '';
-
-// المسارات
-$routes = [
-    'get_codes' => 'endpoints/get_codes.php',
-    'add_number' => 'endpoints/add_number.php',
-    'delete_number' => 'endpoints/delete_number.php',
-    'receive_sms' => 'endpoints/receive_sms.php',
-    'stats' => 'endpoints/stats.php',
-    'api.php' => 'endpoints/get_codes.php',
-    '' => 'home'
-];
-
-if ($endpoint == '' || $endpoint == 'home') {
-    require_once 'api/functions.php';
-    sendResponse([
-        'name' => 'SMS API Server',
-        'version' => '1.0.0',
-        'endpoints' => [
-            'get_codes' => 'GET - جلب الأكواد الجديدة',
-            'add_number' => 'POST - إضافة رقم جديد',
-            'delete_number' => 'POST - حذف رقم',
-            'receive_sms' => 'POST - استقبال رسالة جديدة',
-            'stats' => 'GET - إحصائيات'
-        ],
-        'status' => 'active'
-    ]);
-} elseif (isset($routes[$endpoint])) {
-    require $routes[$endpoint];
-} else {
-    http_response_code(404);
-    echo json_encode(['error' => 'Endpoint not found']);
-}
 ?>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - لوحة التحكم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-card h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2><i class="fas fa-lock me-2"></i>تسجيل الدخول</h2>
+        
+        <?php if (isset($_GET['error'])): ?>
+        <div class="alert alert-danger">❌ اسم المستخدم أو كلمة المرور غير صحيحة</div>
+        <?php endif; ?>
+        
+        <form action="login.php" method="POST">
+            <div class="mb-3">
+                <label class="form-label">اسم المستخدم</label>
+                <input type="text" name="username" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">كلمة المرور</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn-login">
+                <i class="fas fa-sign-in-alt me-2"></i>دخول
+            </button>
+        </form>
+    </div>
+</body>
+</html>
